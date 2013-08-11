@@ -51,6 +51,9 @@
    (list? f) (str "(" (clojure.string/join " " (map to-string f)) ")")
    :otherwise "unknown"))
 
+(defn read-string [str]
+  (clojure.core/read-string str))
+
 (defn to-hex [n]
   (format "0x%016X" n))
 

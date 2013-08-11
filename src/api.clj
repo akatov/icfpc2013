@@ -8,6 +8,7 @@
 (def base "http://icfpc2013.cloudapp.net/")
 
 (defn request
+  "performs an API request to the specified path, optionally posting the data"
   ([path] (request path {}))
   ([path data]
      (:body (http/post (str base path)
@@ -16,9 +17,30 @@
                         :content-type :json
                         :as :json}))))
 
+(defn json-to-prog
+  "converts the array of operators into a proper set of operators, the program string (for train) to a program."
+  [json]
+  (let [id (:id json)
+        size (:size json)
+        ops0 (set (map f/read-string (:operators json)))
+        bonus (contains? ops0 'bonus)
+        tfold (contains? ops0 'tfold)
+        ops (clojure.set/difference ops0 #{'tfold 'bonus}) ; bonus field was added 
+        prog (f/read-string (or (:challenge json) "nil")) ; myproblems has no challenge field
+        solved (:solved json)
+        time-left (:timeLeft json)]
+    {:id id
+     :size size
+     :operators ops
+     :program prog
+     :tfold tfold
+     :bonus bonus
+     :solved solved
+     :time-left time-left}))
+
 (defn myproblems []
-  (let [res (request "myproblems")]
-    res))                               ; TODO: convert result to our representation
+  "returns a seq of problem instances returned by `json-to-prog`"
+  (->> (request "myproblems") (map json-to-prog)))
 
 (defn eval-program
   "example: (eval-program '(lambda (x) (plus x 1)) [1,2,3]) ;;=> (2 3 4)"
@@ -41,15 +63,29 @@
         outputs (:outputs res)]
     (map f/to-num outputs)))
 
-(defn guess [id prog]
-  (let [res (request "guess"
+(defn guess
+  "examples:
+  (guess \"L4ZaBkerPGDH38Xr4S29kXzS\" '(lambda (x) x)) ;;=>
+    {:win false, :input 36028797018963968, :output 9223372036854775808, ... }
+  (let [t (train)] (guess (:id t) (:program t))) ;;=>
+    {:win true, :lightning nil, ... }"
+  [id prog]
+  (let [program (f/to-string prog)
+        res (request "guess"
                      {:id id
-                      :program prog})]
-    res))                               ; TODO: figure out how to use the response
+                      :program program})
+        status (:status res)
+        vals (:values res)
+        input (if vals (f/to-num (vals 0)) nil)
+        output (if vals (f/to-num (vals 1)) nil)]
+    (conj res
+          {:win (= status "win")
+           :input input
+           :output output})))
 
 (defn train []
-  (let [res (request  "train")]
-    res))                               ; TODO: convert output to our representation
+  "example: (train) ;;=> {:id \"...\", :size 23, :operators #{and or}, :prog (lambda (x) ...)}"
+  (-> (request "train") json-to-prog))
 
 (defn status []
   (request "status"))
