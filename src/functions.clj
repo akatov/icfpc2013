@@ -1,7 +1,8 @@
-(ns functions)
+(ns functions
+  (:refer-clojure :exclude [or and not]))
 
 (defmacro lambda [args & body]
-  `(fn [~(first args)] ~(first body)))
+  `(fn [~@args] ~@body))
 
 (defn if0 [e1 e2 e3]
   (if (== e1 0) e2 e3))
@@ -32,3 +33,10 @@
 
 (defn plus [x y]
   (+ x y))
+
+(defn eval
+  "fun is a quoted function. args is a vector of arguments"
+  [fun args]
+  (binding [*ns* *ns*]
+    (in-ns 'functions)
+    (map (clojure.core/eval fun) args)))
