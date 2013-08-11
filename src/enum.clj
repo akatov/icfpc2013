@@ -13,19 +13,34 @@
    'plus 2
    'if0 3})
 
-(defn progs
+(defn symbols [sexp]
+  (cond
+   (symbol? sexp) #{sexp}
+   (list? sexp) (apply clojure.set/union (map symbols sexp))))
+
+(defn progsAux
   "returns seq of possible programs of size `size` using operators `ops`."
-  ([size ops rops]
-     (if (= size 1)
-       (if (empty? rops) [0 1 'x] [])
-       (concat
-        (for [o ops :when (= 1 (arity o)) 
-              p (progs (- size 1) ops (disj rops o))] 
-          (list o p))
-        (for [o  ops :when (= 2 (arity o))
-              s  (range 1 (/ size 2))
-              p1 (progs s ops  (disj rops o))
-              p2 (progs (- size (+ 1 s)) ops  (disj rops o))] 
-          (list o p1 p2)))))
-  ([size ops]
-     (progs size ops ops)))
+  [size ops]
+  ;; (println "size: " size ", ops: " ops)
+  (if (= size 1)
+    [0 1 'x]
+    (concat
+     (for [o ops :when (= 1 (arity o))
+           p (progsAux (- size 1) ops)]
+       (list o p))
+     (for [o  ops :when (= 2 (arity o))
+           s  (range 1 (Math/floor (/ size 2)))
+           p1 (progsAux s ops)
+           p2 (progsAux (- size 1 s) ops)]
+       (list o p1 p2))
+     (for [o ops :when (= 2 (arity o))
+           :when (odd? size)
+           :let [s (/ (- size 1) 2)]
+           p1 (progsAux s ops)
+           p2 (progsAux s ops)
+           :when (>= (compare ( f/to-string p1) (f/to-string p2)) 0)]
+       (list o p1 p2)))))
+
+(defn progs [size ops]
+  (->> (progsAux size ops)
+       (filter #(clojure.set/subset? ops (symbols %)))))
