@@ -108,6 +108,7 @@
       (filter #(not (contains? (:operators %) 'bonus)))
       (filter #(not (contains? (:operators %) 'plus)))
       (filter #(not (:solved %)))
+      (filter #(not (= 0 (:time-left %))))
       (sort-by :size)
       (sort-by #(count (:operators %)))
       first
