@@ -128,14 +128,14 @@
   ([size ops]
      (progs size ops [] []))
   ([size ops inputs outputs]
-     (->> (progsAux size ops)
+     (->> (progsAux (- size 1) ops)
       ;;  (filter #(clojure.set/subset? ops (symbols %)))
           (map #(list 'lambda (list 'x) %))
           (filter #(= outputs (f/eval % inputs))))))
 
 ;; EXAMPLE: 
 
-;; user> (doseq [x (enum/progs 7 #{'not 'if0 'and})] (println x))
+;; user> (doseq [x (enum/progs 8 #{'not 'if0 'and})] (println x))
 ;; (lambda (x) (not (and 0 (if0 0 0 0))))
 ;; (lambda (x) (not (and 0 (if0 0 0 1))))
 ;; (lambda (x) (not (and 0 (if0 0 0 x))))
