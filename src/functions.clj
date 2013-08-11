@@ -40,3 +40,11 @@
   (binding [*ns* *ns*]
     (in-ns 'functions)
     (map (clojure.core/eval fun) args)))
+
+(defn to-string [f]
+  (cond
+   (= f 0) "0"
+   (= f 1) "1"
+   (symbol? f) (name f)
+   (list? f) (str "(" (clojure.string/join " " (map to-string f)) ")")
+   :otherwise "unknown"))
