@@ -14,28 +14,28 @@
   (.and x y))
 
 (defn not [x]
-  (and maxInteger (.not x)))
+  (.and maxInteger (.not x)))
 
 (defn or [x y]
-  (and maxInteger (.or x y)))
+  (.and maxInteger (.or x y)))
 
 (defn xor [x y]
-  (and maxInteger (.xor x y)))
+  (.and maxInteger (.xor x y)))
 
 (defn shl1 [x]
-  (and maxInteger (.shiftLeft x 1)))
+  (.and maxInteger (.shiftLeft x 1)))
 
 (defn shr1 [x]
-  (and maxInteger (.shiftRight x 1)))
+  (.and maxInteger (.shiftRight x 1)))
 
 (defn shr4 [x]
-  (and maxInteger (.shiftRight x 4)))
+  (.and maxInteger (.shiftRight x 4)))
 
 (defn shr16 [x]
-  (and maxInteger (.shiftRight x 16)))
+  (.and maxInteger (.shiftRight x 16)))
 
 (defn plus [x y]
-  (and maxInteger (+ x y)))
+  (.and maxInteger (+ x y)))
 
 (defn eval
   "fun is a quoted function. args is a vector of arguments.
