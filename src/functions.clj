@@ -1,7 +1,8 @@
 (ns functions
   (:refer-clojure :exclude [or and not]))
 
-(def maxInteger 18446744073709551616N)
+(def maxInteger "max 64-bit integer"
+  (new BigInteger "ffffffffffffffff" 16))
 
 (defmacro lambda [args & body]
   `(fn [~@args] ~@body))
@@ -9,35 +10,36 @@
 (defn if0 [e1 e2 e3]
   (if (== e1 0) e2 e3))
 
-(defn not [x]
-  (-> x bit-not (mod maxInteger)))
-
-(defn shl1 [x]
-  (-> x (bit-shift-left 1) (mod maxInteger)))
-
-(defn shr1 [x]
-  (-> x (bit-shift-right 1) (mod maxInteger)))
-
-(defn shr4 [x]
-  (-> x (bit-shift-right 4) (mod maxInteger)))
-
-(defn shr16 [x]
-  (-> x (bit-shift-right 16) (mod maxInteger)))
-
 (defn and [x y]
-  (mod (bit-and x y) maxInteger))
+  (.and x y))
+
+(defn not [x]
+  (and maxInteger (.not x)))
 
 (defn or [x y]
-  (mod (bit-or x y) maxInteger))
+  (and maxInteger (.or x y)))
 
 (defn xor [x y]
-  (mod (bit-xor x y) maxInteger))
+  (and maxInteger (.xor x y)))
+
+(defn shl1 [x]
+  (and maxInteger (.shiftLeft x 1)))
+
+(defn shr1 [x]
+  (and maxInteger (.shiftRight x 1)))
+
+(defn shr4 [x]
+  (and maxInteger (.shiftRight x 4)))
+
+(defn shr16 [x]
+  (and maxInteger (.shiftRight x 16)))
 
 (defn plus [x y]
-  (mod (+ x y) maxInteger))
+  (and maxInteger (+ x y)))
 
 (defn eval
-  "fun is a quoted function. args is a vector of arguments"
+  "fun is a quoted function. args is a vector of arguments.
+exapmle: (eval '(lambda (x) (not x)) (map from-long [0 1 2]))"
   [fun args]
   (binding [*ns* *ns*]
     (in-ns 'functions)
@@ -59,3 +61,6 @@
 
 (defn to-num [hex]
   (new BigInteger (subs hex 2) 16))
+
+(defn from-long [n]
+  (BigInteger/valueOf n))
