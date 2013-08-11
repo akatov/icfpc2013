@@ -1,6 +1,19 @@
 (ns functions
   (:refer-clojure :exclude [or and not]))
 
+(defn to-num
+  "converts strings and longs to BigIntegers"
+  [x]
+  (let [t (type x)]
+    (cond
+     (= t String)
+     (if (= "0X" (.toUpperCase (subs x 0 2)))
+       (new BigInteger (subs x 2) 16)
+       (new BigInteger x 16))
+     (= t Long) (BigInteger/valueOf x)
+     (= t BigInteger) x
+     :otherwise (throw (Exception. "unknown type")))))
+
 (def maxInteger "max 64-bit integer"
   (new BigInteger "ffffffffffffffff" 16))
 
@@ -10,7 +23,7 @@ example:
   (map to-hex (num-to-list (to-num \"0x1122334455667788\"))) ;;=>
     (0x88, 0x77, 0x66, 0x55, 0x44, 0x33, 0x22, 0x11)"
   [n]
-  (map #(.and (from-long 0xff) (.shiftRight n (* 8 %)))
+  (map #(.and (to-num 0xff) (.shiftRight n (* 8 %)))
        (range 0 8)))
 
 (defmacro lambda [args & body]
@@ -51,7 +64,7 @@ example:
 
 (defn eval
   "fun is a quoted function. args is a vector of arguments.
-exapmle: (eval '(lambda (x) (not x)) (map from-long [0 1 2]))"
+exapmle: (eval '(lambda (x) (not x)) (map to-num [0 1 2]))"
   [fun args]
   (binding [*ns* *ns*]
     (in-ns 'functions)
@@ -70,9 +83,3 @@ exapmle: (eval '(lambda (x) (not x)) (map from-long [0 1 2]))"
 
 (defn to-hex [n]
   (format "0x%016X" n))
-
-(defn to-num [hex]
-  (new BigInteger (subs hex 2) 16))
-
-(defn from-long [n]
-  (BigInteger/valueOf n))
