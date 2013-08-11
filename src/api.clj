@@ -20,7 +20,9 @@
   (let [res (request "myproblems")]
     res))                               ; TODO: convert result to our representation
 
-(defn eval-program [prog args]
+(defn eval-program
+  "example: (eval-program '(lambda (x) (plus x 1)) [1,2,3]) ;;=> (2 3 4)"
+  [prog args]
   (let [prog-str (f/to-string prog)
         args-hex (map f/to-hex args)
         res (request "eval"
@@ -29,12 +31,15 @@
         outputs (:outputs res)]
     (map f/to-num outputs)))
 
-(defn eval-id [id args]
-  (let [res (request  "eval"
-                      {:id id
-                       :arguments args})
+(defn eval-id
+  "example: (eval-id \"L4ZaBkerPGDH38Xr4S29kXzS\" [1,2,3]) ;;=> (256 512 768)"
+  [id args]
+  (let [args-hex (map f/to-hex args)
+        res (request "eval"
+                     {:id id
+                      :arguments args})
         outputs (:outputs res)]
-    outputs))                           ; TODO: convert outputs to longs
+    (map f/to-num outputs)))
 
 (defn guess [id prog]
   (let [res (request "guess"
