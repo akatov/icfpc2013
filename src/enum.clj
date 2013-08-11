@@ -14,19 +14,19 @@
    'if0 3
    'fold 4})  ;; we use 4 for fold because replacing a subexpression by fold (...) will adds 4 to the size of the expression (and not 3, like in the case of if0)
 
-(defn minSize [ops] 
+(defn minSize [ops]
   "minimal size of a program having the set of operators `ops`"
   (reduce + 1 (map arity ops)))
 
 (defn guessCountsAux [size ops upb]
   "guess the number of occurence of each operators knowing size and set of operators
    when upb is not specified, it is assumed that each operator must occur at least once
-   when given, upb is a mapping providing an upper bound on the number of each operator" 
-  (let [o (first ops) 
-        a (arity o) 
-        u (if (upb o) (upb o) size) 
-        tail (disj ops (first ops))] 
-   (if (empty? ops) (seq (list {})) 
+   when given, upb is a mapping providing an upper bound on the number of each operator"
+  (let [o (first ops)
+        a (arity o)
+        u (if (upb o) (upb o) size)
+        tail (disj ops (first ops))]
+   (if (empty? ops) (seq (list {}))
     (for [ts (range (minSize tail) (if (empty? tail) 2 (+ 1 (- size (if (upb o) 0 a)))))
           :let [os (- size ts)]
           :let [cnt (int (Math/floor (/ os a)))]
@@ -35,27 +35,27 @@
           tres (guessCountsAux ts tail upb)]
     (if (= 0 cnt) tres (merge tres {o cnt}))))))
 
-(defn guessCounts [size ops] 
-   "guess the number of occurence of each opperator, given a set ops" 
+(defn guessCounts [size ops]
+   "guess the number of occurence of each opperator, given a set ops"
    (guessCountsAux size ops {}))
 
-(defn guessSubCounts [size opsmap] 
-   "guess the possible counts of each operator in a sub expression" 
+(defn guessSubCounts [size opsmap]
+   "guess the possible counts of each operator in a sub expression"
    (guessCountsAux size (set (keys opsmap)) opsmap))
 
-(defn decr [k n m] 
+(defn decr [k n m]
   "decrement the value of key k by n in map m and delete the key if new value is 0"
   (if (= n (m k)) (dissoc m k) (merge m {k (- (m k) n)})))
 
-(defn decrMap [m1 m2] 
+(defn decrMap [m1 m2]
   "apply decr [key value] to m2 for each key-value pair in m1 "
   (reduce #(decr %2 (m1 %2) %1) m2 (keys m1)))
 
-(defn zvar [i] 
+(defn zvar [i]
   "Auxiliary function to create variables with the syntax z_123 (if i=123)"
   (symbol (clojure.string/join "_" ["z" (str i)])))
 
-(defn add2vars [v] 
+(defn add2vars [v]
   "Auxiliary function to add 2 new variables"
   (concat v (map zvar [(- (count v) 1) (count v)])))
 
@@ -91,7 +91,7 @@
             :let [M (decrMap m1 (decr o 1 opsmap))]
             m2 (guessSubCounts s2 M)
             p2 (progsAuxCnt vars s2 m2)
-            :let [s3 (- size 1 s1 s2)] 
+            :let [s3 (- size 1 s1 s2)]
             m3 (guessSubCounts s3 (decrMap m2 M))
             p3 (progsAuxCnt vars s3 m3)]
        (list o p1 p2 p3))
@@ -105,9 +105,9 @@
        ;;      :let [M (decrMap m1 (decr o 1 opsmap))]
        ;;      m2 (guessSubCounts s2 M)
        ;;      p2 (progsAuxCnt vars s2 m2)
-       ;;      :let [s3 (- s 1 s1 s2)] 
+       ;;      :let [s3 (- s 1 s1 s2)]
        ;;      m3 (guessSubCounts s3 (decrMap m2 M))
-       ;;      V  (add2vars vars) 
+       ;;      V  (add2vars vars)
        ;;      p3 (progsAuxCnt V s3 m3)
        ;;      x V y V]
        ;; (list 'fold p1 p2 (list 'lambda (list x y) p3)))
@@ -152,16 +152,16 @@
   ([size ops]
      (progs size ops [] []))
   ([size ops inputs outputs]
-     (if (contains? ops 'tfold) 
+     (if (contains? ops 'tfold)
      (->> (progsAux ['x 'y] (- size 1) (disj ops 'tfold))
           (map #(list 'lambda (list 'x) (list 'fold 'x 0 (list 'lambda (list 'x 'y) %))))
-          (filter #(= outputs (f/eval % inputs))))     
+          (filter #(= outputs (f/eval % inputs))))
      (->> (progsAux ['x] (- size 1) ops)
           (map #(list 'lambda (list 'x) %))
           (filter #(= outputs (f/eval % inputs))))
      )))
 
-;; EXAMPLE: 
+;; EXAMPLE:
 
 ;; user> (doseq [x (enum/progs 8 #{'not 'if0 'and})] (println x))
 ;; (lambda (x) (not (and 0 (if0 0 0 0))))

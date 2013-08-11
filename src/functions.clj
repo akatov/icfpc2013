@@ -76,7 +76,7 @@ example:
   (.and maxInteger (.shiftRight x 16)))
 
 (def-bi-fn plus [x y]
-  (.and maxInteger (+ x y)))
+  (.and maxInteger (.add x y)))
 
 (defn eval
   "fun is a quoted function. args is a vector of arguments.
