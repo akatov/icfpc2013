@@ -80,6 +80,7 @@
         output (if vals (f/to-num (vals 1)) nil)]
     (conj res
           {:win (= status "win")
+           :status status
            :input input
            :output output})))
 
