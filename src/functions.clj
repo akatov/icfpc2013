@@ -26,7 +26,7 @@ example:
   (map to-hex (num-to-list (to-num \"0x1122334455667788\"))) ;;=>
     (0x88, 0x77, 0x66, 0x55, 0x44, 0x33, 0x22, 0x11)"
   [n]
-  (map #(.and (to-num 0xff) (.shiftRight n (* 8 %)))
+  (map #(.and (to-num 0xff) (.shiftRight (to-num n) (* 8 %)))
        (range 0 8)))
 
 (defmacro lambda [args & body]
