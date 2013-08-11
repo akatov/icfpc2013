@@ -11,7 +11,8 @@
    'and 2
    'xor 2
    'plus 2
-   'if0 3})
+   'if0 3
+   'fold 4})  ;; we use 4 for fold because replacing a subexpression by fold (...) will adds 4 to the size of the expression (and not 3, like in the case of if0)
 
 (defn minSize [ops] 
   "minimal size of a program having the set of operators `ops`"
@@ -50,6 +51,13 @@
   "apply decr [key value] to m2 for each key-value pair in m1 "
   (reduce #(decr %2 (m1 %2) %1) m2 (keys m1)))
 
+(defn zvar [i] 
+  "Auxiliary function to create variables with the syntax z_123 (if i=123)"
+  (symbol (clojure.string/join "_" ["z" (str i)])))
+
+(defn add2vars [v] 
+  "Auxiliary function to add 2 new variables"
+  (concat v (map zvar [(- (count v) 1) (count v)])))
 
 (defn progsAuxCnt
   "possible programs of given size knowning the number of occurence of each operator"
@@ -75,7 +83,7 @@
            p2 (progsAuxCnt vars s (decrMap m (decr o 1 opsmap)))
            :when (>= (compare ( f/to-string p1) (f/to-string p2)) 0)]
        (list o p1 p2))
-       (for [o  (set (keys opsmap)) :when (= 3 (arity o))
+       (for [o  (set (keys opsmap)) :when (= o 'if0)
             s1 (range 1 (- size 2))
             m1 (guessSubCounts s1 (decr o 1 opsmap))
             p1 (progsAuxCnt vars s1 m1)
@@ -87,6 +95,22 @@
             m3 (guessSubCounts s3 (decrMap m2 M))
             p3 (progsAuxCnt vars s3 m3)]
        (list o p1 p2 p3))
+       ;; WORKING ON FOLD - NOT READY YET
+       ;; (for [o  (set (keys opsmap)) :when (= o 'fold)
+       ;;       :let [s (- size 1)]
+       ;;      s1 (range 1 (- s 2))
+       ;;      m1 (guessSubCounts s1 (decr o 1 opsmap))
+       ;;      p1 (progsAuxCnt vars s1 m1)
+       ;;      s2 (range 1 (- s s1))
+       ;;      :let [M (decrMap m1 (decr o 1 opsmap))]
+       ;;      m2 (guessSubCounts s2 M)
+       ;;      p2 (progsAuxCnt vars s2 m2)
+       ;;      :let [s3 (- s 1 s1 s2)] 
+       ;;      m3 (guessSubCounts s3 (decrMap m2 M))
+       ;;      V  (add2vars vars) 
+       ;;      p3 (progsAuxCnt V s3 m3)
+       ;;      x V y V]
+       ;; (list 'fold p1 p2 (list 'lambda (list x y) p3)))
 )))
 
 ;; DEPRECATED (see new version of progAux below the commented section)
@@ -131,8 +155,7 @@
      (if (contains? ops 'tfold) 
      (->> (progsAux ['x 'y] (- size 1) (disj ops 'tfold))
           (map #(list 'lambda (list 'x) (list 'fold 'x 0 (list 'lambda (list 'x 'y) %))))
-          (filter #(= outputs (f/eval % inputs))))
-     
+          (filter #(= outputs (f/eval % inputs))))     
      (->> (progsAux ['x] (- size 1) ops)
           (map #(list 'lambda (list 'x) %))
           (filter #(= outputs (f/eval % inputs))))
