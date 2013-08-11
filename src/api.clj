@@ -86,9 +86,10 @@
 (defn train
   "example: (train) ;;=> {:id \"...\", :size 23, :operators #{and or}, :prog (lambda (x) ...)}
    size must be in [3, 30]"
-  ([] (-> (request "train" {}) json-to-prog))
+  ([] (-> (request "train" {:operators []}) json-to-prog))
   ([size]
-    (-> (request "train" {:size size}) json-to-prog)))
+    (-> (request "train" {:size size
+                          :operators []}) json-to-prog)))
 
 (defn status []
   (request "status"))
