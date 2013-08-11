@@ -1,5 +1,8 @@
 (ns functions
-  (:refer-clojure :exclude [or and not]))
+  (:refer-clojure :exclude [or and not eval read-string]))
+
+(defn from-long [n]
+  (BigInteger/valueOf n))
 
 (defn to-num
   "converts strings and longs to BigIntegers"
@@ -32,34 +35,47 @@ example:
 (defmacro fold [x y & fun] ;; y is accumulator
   `(reduce ~@fun ~y (num-to-list ~x)))
 
+(defn- new-bindings [args]
+  (vec (mapcat (fn [args-name]
+                 [args-name (list 'to-num args-name)])
+               args)))
+
+(defmacro def-bi-fn
+  "Defines a function with each argument first being cooerced to a
+  BigInteger"
+  [fn-name args & body]
+  `(defn ~fn-name ~args
+     (let ~(new-bindings args)
+       ~@body)))
+
 (defn if0 [e1 e2 e3]
   (if (== e1 0) e2 e3))
 
-(defn and [x y]
+(def-bi-fn and [x y]
   (.and x y))
 
-(defn not [x]
+(def-bi-fn not [x]
   (.and maxInteger (.not x)))
 
-(defn or [x y]
+(def-bi-fn or [x y]
   (.and maxInteger (.or x y)))
 
-(defn xor [x y]
+(def-bi-fn xor [x y]
   (.and maxInteger (.xor x y)))
 
-(defn shl1 [x]
+(def-bi-fn shl1 [x]
   (.and maxInteger (.shiftLeft x 1)))
 
-(defn shr1 [x]
+(def-bi-fn shr1 [x]
   (.and maxInteger (.shiftRight x 1)))
 
-(defn shr4 [x]
+(def-bi-fn shr4 [x]
   (.and maxInteger (.shiftRight x 4)))
 
-(defn shr16 [x]
+(def-bi-fn shr16 [x]
   (.and maxInteger (.shiftRight x 16)))
 
-(defn plus [x y]
+(def-bi-fn plus [x y]
   (.and maxInteger (+ x y)))
 
 (defn eval
