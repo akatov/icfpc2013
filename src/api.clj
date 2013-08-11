@@ -106,6 +106,7 @@
       (filter #(not (contains? (:operators %) 'fold)))
       (filter #(not (contains? (:operators %) 'tfold)))
       (filter #(not (contains? (:operators %) 'bonus)))
+      (filter #(not (contains? (:operators %) 'plus)))
       (filter #(not (:solved %)))
       (sort-by :size)
       (sort-by #(count (:operators %)))
