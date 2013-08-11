@@ -25,7 +25,7 @@
         ops0 (set (map f/read-string (:operators json)))
         bonus (contains? ops0 'bonus)
         tfold (contains? ops0 'tfold)
-        ops (clojure.set/difference ops0 #{'tfold 'bonus}) ; bonus field was added
+        ops ops0
         prog (f/read-string (or (:challenge json) "nil")) ; myproblems has no challenge field
         solved (:solved json)
         time-left (:timeLeft json)]
@@ -92,3 +92,15 @@
 
 (defn status []
   (request "status"))
+
+(defn get-easy-unsolved-problem []
+  (->> (myproblems)
+       ;; remove these as necessary
+      (filter #(not (contains? (:operators %) 'fold)))
+      (filter #(not (contains? (:operators %) 'tfold)))
+      (filter #(not (contains? (:operators %) 'bonus)))
+      (filter #(not (:solved %)))
+      (sort-by :size)
+      (sort-by #(count (:operators %)))
+      first
+      ))
