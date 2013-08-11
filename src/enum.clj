@@ -41,6 +41,11 @@
            :when (>= (compare ( f/to-string p1) (f/to-string p2)) 0)]
        (list o p1 p2)))))
 
-(defn progs [size ops]
-  (->> (progsAux size ops)
-       (filter #(clojure.set/subset? ops (symbols %)))))
+(defn progs
+  ([size ops]
+     (progs size ops [] []))
+  ([size ops inputs outputs]
+     (->> (progsAux size ops)
+          (filter #(clojure.set/subset? ops (symbols %)))
+          (map #(list 'lambda (list 'x) %))
+          (filter #(= outputs (f/eval % inputs))))))
