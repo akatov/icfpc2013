@@ -4,8 +4,20 @@
 (def maxInteger "max 64-bit integer"
   (new BigInteger "ffffffffffffffff" 16))
 
+(defn num-to-list
+  "converts a number to a list of numbers for use in `fold`.
+example:
+  (map to-hex (num-to-list (to-num \"0x1122334455667788\"))) ;;=>
+    (0x88, 0x77, 0x66, 0x55, 0x44, 0x33, 0x22, 0x11)"
+  [n]
+  (map #(.and (from-long 0xff) (.shiftRight n (* 8 %)))
+       (range 0 8)))
+
 (defmacro lambda [args & body]
   `(fn [~@args] ~@body))
+
+(defmacro fold [x y & fun] ;; y is accumulator
+  `(reduce ~@fun ~y (num-to-list ~x)))
 
 (defn if0 [e1 e2 e3]
   (if (== e1 0) e2 e3))
