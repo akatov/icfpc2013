@@ -1,6 +1,8 @@
 (ns functions
   (:refer-clojure :exclude [or and not]))
 
+(def maxInteger 18446744073709551616N)
+
 (defmacro lambda [args & body]
   `(fn [~@args] ~@body))
 
@@ -8,31 +10,31 @@
   (if (== e1 0) e2 e3))
 
 (defn not [x]
-  (bit-not x))
+  (-> x bit-not (mod maxInteger)))
 
 (defn shl1 [x]
-  (bit-shift-left x 1))
+  (-> x (bit-shift-left 1) (mod maxInteger)))
 
 (defn shr1 [x]
-  (bit-shift-right x 1))
+  (-> x (bit-shift-right 1) (mod maxInteger)))
 
 (defn shr4 [x]
-  (bit-shift-right x 4))
+  (-> x (bit-shift-right 4) (mod maxInteger)))
 
 (defn shr16 [x]
-  (bit-shift-right x 16))
+  (-> x (bit-shift-right 16) (mod maxInteger)))
 
 (defn and [x y]
-  (bit-and x y))
+  (mod (bit-and x y) maxInteger))
 
 (defn or [x y]
-  (bit-or x y))
+  (mod (bit-or x y) maxInteger))
 
 (defn xor [x y]
-  (bit-xor x y))
+  (mod (bit-xor x y) maxInteger))
 
 (defn plus [x y]
-  (+ x y))
+  (mod (+ x y) maxInteger))
 
 (defn eval
   "fun is a quoted function. args is a vector of arguments"
@@ -48,3 +50,9 @@
    (symbol? f) (name f)
    (list? f) (str "(" (clojure.string/join " " (map to-string f)) ")")
    :otherwise "unknown"))
+
+(defn to-hex [n]
+  (format "0x%016X" n))
+
+(defn to-num [hex]
+  (new BigInteger (subs hex 2) 16))

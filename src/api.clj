@@ -1,5 +1,7 @@
 (ns api
-  [:require [clj-http.client :as http]])
+  [:require
+   [clj-http.client :as http]
+   [functions :as f]])
 
 (def AUTH "0423lToAuE8L3zsvLO5aAbCdoyKhxfabfY2VY88XvpsH1H")
 
@@ -19,11 +21,13 @@
     res))                               ; TODO: convert result to our representation
 
 (defn eval-program [prog args]
-  (let [res (request "eval"
-                     {:program prog
-                      :arguments args})
+  (let [prog-str (f/to-string prog)
+        args-hex (map f/to-hex args)
+        res (request "eval"
+                     {:program prog-str
+                      :arguments args-hex})
         outputs (:outputs res)]
-    outputs))                           ; TODO: convert outputs to longs
+    (map f/to-num outputs)))
 
 (defn eval-id [id args]
   (let [res (request  "eval"
