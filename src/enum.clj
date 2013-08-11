@@ -26,7 +26,8 @@
         a (arity o)
         u (if (upb o) (upb o) size)
         tail (disj ops (first ops))]
-   (if (empty? ops) (seq (list {}))
+   (if (or (empty? ops) (< size (minSize ops)))
+    (seq (list {}))
     (for [ts (range (minSize tail) (if (empty? tail) 2 (+ 1 (- size (if (upb o) 0 a)))))
           :let [os (- size ts)]
           :let [cnt (int (Math/floor (/ os a)))]
