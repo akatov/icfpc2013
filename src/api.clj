@@ -25,7 +25,7 @@
         ops0 (set (map f/read-string (:operators json)))
         bonus (contains? ops0 'bonus)
         tfold (contains? ops0 'tfold)
-        ops (clojure.set/difference ops0 #{'tfold 'bonus}) ; bonus field was added 
+        ops (clojure.set/difference ops0 #{'tfold 'bonus}) ; bonus field was added
         prog (f/read-string (or (:challenge json) "nil")) ; myproblems has no challenge field
         solved (:solved json)
         time-left (:timeLeft json)]
@@ -83,9 +83,12 @@
            :input input
            :output output})))
 
-(defn train []
-  "example: (train) ;;=> {:id \"...\", :size 23, :operators #{and or}, :prog (lambda (x) ...)}"
-  (-> (request "train") json-to-prog))
+(defn train
+  "example: (train) ;;=> {:id \"...\", :size 23, :operators #{and or}, :prog (lambda (x) ...)}
+   size must be in [3, 30]"
+  ([] (-> (request "train" {}) json-to-prog))
+  ([size]
+    (-> (request "train" {:size size}) json-to-prog)))
 
 (defn status []
   (request "status"))
