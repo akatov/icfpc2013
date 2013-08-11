@@ -46,14 +46,16 @@
   (if (time-period-expired? problem)
     (do (println "time period expired. Moving to next problem")
         :ran-out-of-time)
-    (let [result (guess-request problem (first (progs problem inputs outputs)))]
-      (println "Response:" (:status result))
-      (println "guess result:" result)
-      (if (:win result)
-        :success
-        (recur problem
-               (conj inputs (:input result))
-               (conj outputs (:output result)))))))
+    (if-let [progs-result (first (progs problem inputs outputs))]
+      (let [result (guess-request problem progs-result)]
+        (println "Response:" (:status result))
+        (println "guess result:" result)
+        (if (:win result)
+          :success
+          (recur problem
+                 (conj inputs (:input result))
+                 (conj outputs (:output result)))))
+      :fail)))
 
 (defn try-problem [{:keys [id] :as problem}]
   (println "******************** PROBLEM" id "********************")
