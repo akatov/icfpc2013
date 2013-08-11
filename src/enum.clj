@@ -53,39 +53,39 @@
 
 (defn progsAuxCnt
   "possible programs of given size knowning the number of occurence of each operator"
-  [size opsmap]
+  [vars size opsmap]
   ;; (println "size: " size ", opsmap: " opsmap)
   (if (= size 1)
-    [0 1 'x]
+    (concat [0 1] vars)
     (concat
      (for [o  (set (keys opsmap)) :when (= 1 (arity o))
-           p (progsAuxCnt (- size 1) (decr o 1 opsmap))]
+           p (progsAuxCnt vars (- size 1) (decr o 1 opsmap))]
        (list o p))
      (for [o  (set (keys opsmap)) :when (= 2 (arity o))
            s  (range 1 (Math/floor (/ size 2)))
            m  (guessSubCounts s (decr o 1 opsmap))
-           p1 (progsAuxCnt s m)
-           p2 (progsAuxCnt (- size 1 s) (decrMap m (decr o 1 opsmap)))]
+           p1 (progsAuxCnt vars s m)
+           p2 (progsAuxCnt vars (- size 1 s) (decrMap m (decr o 1 opsmap)))]
        (list o p1 p2))
      (for [o  (set (keys opsmap)) :when (= 2 (arity o))
            :when (odd? size)
            :let [s (/ (- size 1) 2)]
            m  (guessSubCounts s (decr o 1 opsmap))
-           p1 (progsAuxCnt s m)
-           p2 (progsAuxCnt s (decrMap m (decr o 1 opsmap)))
+           p1 (progsAuxCnt vars s m)
+           p2 (progsAuxCnt vars s (decrMap m (decr o 1 opsmap)))
            :when (>= (compare ( f/to-string p1) (f/to-string p2)) 0)]
        (list o p1 p2))
        (for [o  (set (keys opsmap)) :when (= 3 (arity o))
             s1 (range 1 (- size 2))
             m1 (guessSubCounts s1 (decr o 1 opsmap))
-            p1 (progsAuxCnt s1 m1)
+            p1 (progsAuxCnt vars s1 m1)
             s2 (range 1 (- size s1))
             :let [M (decrMap m1 (decr o 1 opsmap))]
             m2 (guessSubCounts s2 M)
-            p2 (progsAuxCnt s2 m2)
+            p2 (progsAuxCnt vars s2 m2)
             :let [s3 (- size 1 s1 s2)] 
             m3 (guessSubCounts s3 (decrMap m2 M))
-            p3 (progsAuxCnt s3 m3)]
+            p3 (progsAuxCnt vars s3 m3)]
        (list o p1 p2 p3))
 )))
 
@@ -119,19 +119,24 @@
 ;;            :when (>= (compare ( f/to-string p1) (f/to-string p2)) 0)]
 ;;        (list o p1 p2)))))
 
-(defn progsAux [size ops]
+(defn progsAux [vars size ops]
  "Same behaviour as previous version of progAux above"
- (reduce concat #{} (map #(progsAuxCnt size %) (guessCounts size ops)))  )
+ (reduce concat #{} (map #(progsAuxCnt vars size %) (guessCounts size ops)))  )
 
 
 (defn progs
   ([size ops]
      (progs size ops [] []))
   ([size ops inputs outputs]
-     (->> (progsAux (- size 1) ops)
-      ;;  (filter #(clojure.set/subset? ops (symbols %)))
+     (if (contains? ops 'tfold) 
+     (->> (progsAux ['x 'y] (- size 1) (disj ops 'tfold))
+          (map #(list 'lambda (list 'x) (list 'fold 'x 0 (list 'lambda (list 'x 'y) %))))
+          (filter #(= outputs (f/eval % inputs))))
+     
+     (->> (progsAux ['x] (- size 1) ops)
           (map #(list 'lambda (list 'x) %))
-          (filter #(= outputs (f/eval % inputs))))))
+          (filter #(= outputs (f/eval % inputs))))
+     )))
 
 ;; EXAMPLE: 
 
