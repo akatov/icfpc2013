@@ -7,7 +7,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Helpers ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn rand-big-int []
-  (to-num (apply str (repeatedly 16 #(rand-nth "0123456789abcdef")))))
+  (to-num (apply str (repeatedly 8 #(rand-nth "0123456789abcdef")))))
 
 (defn generate-inputs []
   (conj (repeatedly 254 rand-big-int)
@@ -33,18 +33,22 @@
            {:size size
             :ops operators
             :num-inputs (count inputs)
-            :num-outputs (count outputs)})
+            :num-outputs (count outputs)
+            :first-few-inputs (take 5 inputs)
+            :last-few-outputs (take 5 outputs)})
   (enum/progs size operators inputs outputs))
 
 (defn guess-request [{:keys [id] :as problem} prog]
   (api/guess id prog))
 
 (defn guess [problem inputs outputs]
+  (println "outputs" outputs)
   (if (time-period-expired? problem)
     (do (println "time period expired. Moving to next problem")
         :ran-out-of-time)
     (let [result (guess-request problem (first (progs problem inputs outputs)))]
       (println "Response:" (:status result))
+      (println "guess result:" result)
       (if (:win result)
         :success
         (recur problem
@@ -54,16 +58,17 @@
 (defn try-problem [{:keys [id] :as problem}]
   (println "******************** PROBLEM" id "********************")
   (let [inputs (generate-inputs)]
-    (guess-next problem
-                inputs
-                (api/eval-id id inputs))))
+    (println (first inputs))
+    (guess problem
+           inputs
+           (api/eval-id id inputs))))
 
 (defn log-result [problem result]
   (swap! db
          update-in [:results]
          conj [(:id problem)
                {:result result
-                :time-taken (- (current-msecs) (:time-started result))}]))
+                :time-taken (- (current-msecs) (:time-started problem))}]))
 
 (defn run-loop []
   (while true

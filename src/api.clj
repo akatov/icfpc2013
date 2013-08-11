@@ -11,11 +11,14 @@
   "performs an API request to the specified path, optionally posting the data"
   ([path] (request path {}))
   ([path data]
-     (:body (http/post (str base path)
-                       {:query-params {:auth AUTH}
-                        :form-params data
-                        :content-type :json
-                        :as :json}))))
+     (println "sending request" path data)
+     (let [result (http/post (str base path)
+                             {:query-params {:auth AUTH}
+                              :form-params data
+                              :content-type :json
+                              :as :json})]
+       (println "--------request result:" result)
+       (:body result))))
 
 (defn json-to-prog
   "converts the array of operators into a proper set of operators, the program string (for train) to a program."
@@ -56,7 +59,7 @@
 (defn eval-id
   "example: (eval-id \"L4ZaBkerPGDH38Xr4S29kXzS\" [1,2,3]) ;;=> (256 512 768)"
   [id args]
-  (let [args-hex (map f/to-hex args)
+  (let [args-hex (map f/to-hex (vec args))
         res (request "eval"
                      {:id id
                       :arguments args})
@@ -70,7 +73,9 @@
   (let [t (train)] (guess (:id t) (:program t))) ;;=>
     {:win true, :lightning nil, ... }"
   [id prog]
+  (prn "prog is" prog)
   (let [program (f/to-string prog)
+        _ (println "program is" program)
         res (request "guess"
                      {:id id
                       :program program})
