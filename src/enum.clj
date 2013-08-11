@@ -155,10 +155,14 @@
      (if (contains? ops 'tfold)
      (->> (progsAux ['x 'y] (- size 1) (disj ops 'tfold))
           (map #(list 'lambda (list 'x) (list 'fold 'x 0 (list 'lambda (list 'x 'y) %))))
-          (filter #(= outputs (f/eval % inputs))))
+          (filter #(=
+            (map f/to-num outputs)
+            (f/eval % inputs))))
      (->> (progsAux ['x] (- size 1) ops)
           (map #(list 'lambda (list 'x) %))
-          (filter #(= outputs (f/eval % inputs))))
+          (filter #(=
+            (map f/to-num outputs)
+            (f/eval % inputs))))
      )))
 
 ;; EXAMPLE:
