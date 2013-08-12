@@ -100,16 +100,79 @@
 (defn status []
   (request "status"))
 
+(def my-problems (atom nil))
+
+(defn get-my-problems! []
+  (or @my-problems (reset! my-problems (myproblems))))
+
+(def available
+  #{"1AtLRurozdJSUz4HsLPpBIOI"
+"267te6Z56V0CLjtdJCtBEz9c"
+"4dQDBvK3qJhZyLqbyAH155vn"
+"4oKKwyMQK55CjCaBs88q3EtS"
+"6XWbO9osaGcsTJHbBX3wJCQ7"
+"9bjNF86WSpcauiGnc7yTcDdI"
+"9kMNeXiSI9KAhBlwBKO0JNCp"
+"9xcU5QlPgDuXG18mbLKeAugA"
+"AXs7KAMH0Am0RCOjtb4u1zhQ"
+"BdkJs52fqOGqb4OAtLHMIoOB"
+"BomFrAdcAQ8AZJ08c2hm1Acg"
+"BotFA7L6BOG6u4CCAg7UUzGA"
+"DcR93hOmKFuyppI9WpwbqpTK"
+"EBB4LJF6xgrImKO1NHucrlsx"
+"ELxuZCKzX2gtriuOfwVgZZuG"
+"EoWfXIIWMWBAmCOIlboq6AUT"
+"GEhtRdisWFrCDCe53Hk0a8KQ"
+"NOD0wdTBJJybT0RouFJvsKZa"
+"PQAAtIznPTCBghC6gIrucCth"
+"R81w79GRhtAj6s6031FddXCm"
+"SX8I2yybvmdPyIoxg5nVTYOz"
+"TEM4PpfivoxY8o2pXaHjUPO2"
+"UBsVjkXvPsB9TLBic72hvmz4"
+"V2MIHYiRA4vgdF6cxELIq0tR"
+"Vdbj9IoInY809rsTiwBJELft"
+"WFhsDqgEGAoAwrKQbYZRmjBi"
+"YyH0yblFVY1FC2AkLASMYbzn"
+"ZxAGyXqJDn2TRCPWeA6rWOHD"
+"a0dTVRU2B18n6loN1ByOj65Z"
+"aw2vgyFo9eOPZcHhH6Qc2hzI"
+"bKAmX0QgM84xRSvyYoxPYUI2"
+"cEv38BsBGrwMPOfA8bI4DBxI"
+"cltnQxZ0IK3OsPu9raYVOadc"
+"eVRQBYwS78KBs8YnVYyE5Xcm"
+"ebGxrsOHZw7SYdVWPIeXw1a1"
+"huMKX2GljkEUH3yOOEUAElmG"
+"iSt8GtdWwAMItwzTdCOmnvRB"
+"jPRNY4Cg1jBzTeVQdkiGCQ2v"
+"m9AZDuQboj1xaEs93x2mW0jV"
+"pMr9BylAqkwMEnDFLdGZEI83"
+"sdjCAdb0Mva3ABHjC2mgkMpw"
+"tNN8bXzF5PBBH6aAA3Vc7BUw"
+"tnQPpwKbeuU8kUhrIuwxz31g"
+"uS2yqgm408GN3fEOKPayxUVc"
+"ukDBSvYlEQFcKq2c706MG9Uz"
+"vXSdm72MFFEMwBRABcQZV0ON"
+"wIkFVABj2SS1YQIuPSm2yBBG"
+"wSpIETsMnPBsAXADHAwN0Vik"
+"x59jP7IXte60gPA58QO1ckg9"
+"xUDBo9pOZa815NN4AZsjJLk7"
+"yBBx0JxGtxQjA5F9J9A9HzSO"
+"yFAmTbbqIJ09bvvaKfr5A2EE"
+"yqO71r20BQCB5ISc0U4ctoot"
+"ywd1bT2GukCDu1K8LePAe6s7"})
+
 (defn get-easy-unsolved-problem []
-  (->> (myproblems)
+  (->> (get-my-problems!)
        ;; remove these as necessary
       (filter #(not (contains? (:operators %) 'fold)))
       (filter #(not (contains? (:operators %) 'tfold)))
       (filter #(not (contains? (:operators %) 'bonus)))
       (filter #(not (contains? (:operators %) 'plus)))
+      (filter (fn [problem] (available (:id problem))))
       (filter #(not (:solved %)))
       (filter #(not (= 0 (:time-left %))))
       (sort-by :size)
       (sort-by #(count (:operators %)))
+
       first
       ))

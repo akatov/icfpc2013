@@ -46,7 +46,7 @@
   (if (time-period-expired? problem)
     (do (println "time period expired. Moving to next problem")
         :ran-out-of-time)
-    (if-let [progs-result (first (progs problem inputs outputs))]
+    (if-let [progs-result (first (progs problem inputs (reverse outputs)))]
       (let [result (guess-request problem progs-result)]
         (println "Response:" (:status result))
         (println "guess result:" result)
