@@ -22,7 +22,7 @@
 (defonce db (atom nil))
 
 (defn get-next-problem []
-  (assoc (api/get-easy-unsolved-problem)
+  (assoc (api/train 3)
     :time-started (current-msecs)))
 
 (defn time-period-expired? [{:keys [time-started] :as problem}]
@@ -46,7 +46,7 @@
   (if (time-period-expired? problem)
     (do (println "time period expired. Moving to next problem")
         :ran-out-of-time)
-    (if-let [progs-result (first (progs problem inputs (reverse outputs)))]
+    (if-let [progs-result (first (progs problem inputs outputs))]
       (let [result (guess-request problem progs-result)]
         (println "Response:" (:status result))
         (println "guess result:" result)
